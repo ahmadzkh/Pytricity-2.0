@@ -1,70 +1,102 @@
-# Pytricity
- ## About This Project
+# Pytricity — Postpaid Electricity PPOB Platform
 
-Proyek ini dibuat dengan laravel dan diperuntukan tugas individu sebagai Project Work XI RPL A 2020/2021 SMKN 1 Kota Bekasi.
-Dan ini adalah versi 2.0 dari project yang sama.
+![Architecture](https://img.shields.io/badge/Architecture-Headless_Monorepo-0F172A?style=flat-square)
+![Backend](https://img.shields.io/badge/Backend-Laravel_11%2F12_%7C_PHP_8.3-FF2D20?style=flat-square&logo=laravel&logoColor=white)
+![Frontend](https://img.shields.io/badge/Frontend-Next.js_%7C_React_19_%7C_TypeScript-000000?style=flat-square&logo=nextdotjs&logoColor=white)
+![Database](https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Payment](https://img.shields.io/badge/Payment-Midtrans_Snap_Sandbox-002D72?style=flat-square)
 
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+**Pytricity** adalah platform web **Payment Point Online Banking (PPOB)** untuk pengecekan dan pembayaran tagihan listrik pascabayar (PLN) berbasis arsitektur **Headless Monorepo**. Proyek ini dirancang dengan standar produksi yang menekankan keamanan transaksi finansial, konsistensi kontrak API, pengujian otomatis, serta pengalaman pengguna bergaya SaaS Finansial modern.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> [!NOTE]
+> Repositori `Pytricity-2.0` sedang dalam tahap **modernisasi menyeluruh** dari prototipe monolitik Laravel 8 (2023) menjadi platform *headless* (`/backend` + `/frontend`). Seluruh spesifikasi teknis pada dokumentasi ini menjadi acuan tunggal (*single source of truth*) implementasi.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur Utama (MVP Scope)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Area Pelanggan (`customer`)
+- **Autentikasi & Manajemen Sesi:** Registrasi, login, dan logout dengan pencabutan token di sisi peladen (*server-side token revocation*).
+- **Cek Tagihan Listrik (*Inquiry*):** Pemeriksaan tagihan berdasarkan ID Pelanggan 12 digit (terproteksi autentikasi) dengan *Quote Lock* di server untuk mencegah manipulasi nominal.
+- **Pembayaran Multi-Channel:** Integrasi **Midtrans Snap Sandbox** (Virtual Account Bank, QRIS, E-Wallet, dan Minimarket) dengan verifikasi *webhook* SHA-512 yang idempoten.
+- **ID Pelanggan Favorit (`Saved Customer IDs`):** Simpan, ubah, dan hapus daftar ID pelanggan (Rumah, Kantor, Properti) untuk pengecekan ulang 1-klik.
+- **Riwayat & Struk Digital PLN:** Pantau status transaksi secara *real-time* beserta nomor referensi struk resmi (`pln_receipt_ref`).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Area Administrator (`admin`)
+- **Dashboard Analitik:** Ringkasan total pendapatan, jumlah transaksi berhasil, jumlah pelanggan terdaftar, dan transaksi terbaru.
+- **Manajemen Transaksi:** Filter status (`paid`, `pending`, `expired`, `failed`), pencarian, paginasi, dan inspeksi detail struk.
+- **Manajemen Pengguna:** Pencarian dan pemantauan daftar akun pengguna terotorisasi.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tumpukan Teknologi (*Tech Stack*)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Lapisan | Teknologi | Alasan Pemilihan |
+| :--- | :--- | :--- |
+| **Backend API** | PHP 8.3, Laravel 11/12, Laravel Sanctum | Struktur ramping, dukungan jangka panjang, token API stateless yang aman. |
+| **Database** | PostgreSQL | Integritas transaksi ACID, dukungan `UUID`, `DECIMAL(12,2)`, dan *check constraints*. |
+| **Frontend** | Next.js (App Router), React 19, TypeScript, Tailwind CSS v4 | *Type-safe* untuk data finansial, *routing* modular per peran, dan UI responsif. |
+| **Payment Gateway** | Midtrans Snap (`midtrans/midtrans-php`) | Simulasi gratis penuh untuk VA Bank, QRIS, E-Wallet, dan gerai retail. |
+| **Biller Engine** | `BillerInterface` + Deterministic Mock PLN | Simulasi deterministik 24/7 tanpa ketergantungan API berbayar, siap ditukar ke API nyata. |
+| **DevOps & QA** | Docker, Docker Compose, PHPUnit/Pest, ESLint, GitHub Actions | Lingkungan lokal 1-perintah dan jaminan regresi otomatis. |
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## Struktur Direktori Target
 
-### Premium Partners
+```text
+Pytricity-2.0/
+├── backend/                 # Laravel RESTful API
+│   ├── app/
+│   │   ├── Contracts/       # BillerInterface
+│   │   ├── Services/        # MockPlnBillerService, MidtransService
+│   │   └── Http/
+│   └── Dockerfile
+├── frontend/                # Next.js App Router (TypeScript)
+│   ├── app/
+│   │   ├── (public)/        # Landing page, /login, /register
+│   │   ├── (customer)/      # /dashboard, /transactions, /saved-ids
+│   │   └── admin/           # /admin, /admin/transactions, /admin/users
+│   └── lib/
+├── docs/                    # Dokumentasi Standar Proyek
+│   ├── ARCHITECTURE.md
+│   ├── API_SPEC.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── DESIGN_SYSTEM.md
+│   └── DEPLOYMENT.md
+├── docker-compose.yml       # Orkestrasi lokal (PostgreSQL + Backend + Frontend)
+└── CHANGELOG.md
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+---
 
-## Contributing
+## Menjalankan Secara Lokal
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Panduan lengkap instalasi lokal (baik menggunakan Docker Compose maupun manual) serta konfigurasi *environment variables* tersedia di **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
-## Code of Conduct
+### Ringkas (Docker Compose)
+```bash
+git clone https://github.com/ahmadzkh/Pytricity-2.0.git
+cd Pytricity-2.0
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+docker compose up --build
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Indeks Dokumentasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **[CLAUDE.md](CLAUDE.md)** & **[AGENTS.md](AGENTS.md)** — Panduan aturan kerja, batasan MVP, dan standar QA untuk asisten AI.
+- **[DESIGN.md](DESIGN.md)** & **[docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md)** — Standar desain UI/UX modern bergaya SaaS Finansial (referensi Comfra / BudgetControl).
+- **[Arsitektur Sistem](docs/ARCHITECTURE.md)** — Diagram arsitektur, *Biller Adapter Pattern*, alur *Quote Lock*, dan keamanan *webhook*.
+- **[Spesifikasi API](docs/API_SPEC.md)** — Standar amplop JSON, daftar *endpoint*, kode galat, dan kontrak *payload*.
+- **[Skema Basis Data](docs/DATABASE_SCHEMA.md)** — ERD, definisi tabel PostgreSQL, indeks, *constraints*, dan *seeder*.
+- **[Panduan Deployment](docs/DEPLOYMENT.md)** — Setup lokal, Vercel, Docker Backend, Midtrans Webhook, dan CI/CD.
+- **[Catatan Perubahan](CHANGELOG.md)** — Riwayat evolusi dari v2.0 *legacy* ke arsitektur *rebuild*.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
